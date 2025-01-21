@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Dimensões Cube</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #444;
+    }
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: none;
+    }
+    #output {
+      white-space: pre-wrap;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+      height: 200px;
+      margin-top: 15px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      background-color: #007BFF;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gerador de Dimensões Cube</h1>
+    <label for="inputAttributes">Insira a lista de atributos (um por linha):</label>
+    <textarea id="inputAttributes" placeholder="Exemplo:&#10;nm_estado&#10;dt_validade_renavam&#10;nu_classificacao"></textarea>
+    <div class="button-group">
+      <button id="generateButton">Gerar</button>
+      <button id="clearButton">Limpar</button>
+    </div>
+    <h3>Resultado:</h3>
+    <div id="output">O modelo gerado aparecerá aqui...</div>
+    <div class="button-group" style="margin-top: 10px;">
+      <button id="copyButton" disabled>Copiar</button>
+    </div>
+  </div>
+
+  <script>
+    // Mapeamento De-Para para os tipos
+    const tipoMap = {
+      nu: 'number',
+      nm: 'string',
+      id: 'number',
+      dt: 'time',
+      vl: 'number',
+      qt: 'number',
+      in: 'boolean',
+      sg: 'string'
+    };
+
+    // Função para determinar o tipo com base no prefixo
+    const determinarTipo = (atributo) => {
+      const prefixo = atributo.slice(0, 2); // Pega os dois primeiros caracteres
+      return tipoMap[prefixo] || 'string'; // Tipo padrão 'string' caso o prefixo não seja encontrado
+    };
+
+    // Geração do modelo
+    const gerarModelo = (atributos) => {
+      const linhas = atributos.map((atributo) => {
+        const tipo = determinarTipo(atributo.trim());
+        return `  ${atributo.trim()}: {\n    sql: \`${atributo.trim()}\`,\n    type: \`${tipo}\`\n  }`;
+      });
+
+      return `dimensions: {\n${linhas.join(',\n')}\n}`;
+    };
+
+    let limparClickCount = 0; // Contador de cliques no botão "Limpar"
+
+    // Manipulação dos botões e da interface
+    document.getElementById('generateButton').addEventListener('click', () => {
+      const input = document.getElementById('inputAttributes').value.trim();
+      if (!input) {
+        alert('Por favor, insira uma lista de atributos.');
+        return;
+      }
+
+      // Quebra o texto em linhas e remove linhas vazias
+      const atributos = input.split('\n').filter(line => line.trim() !== '');
+      const modeloGerado = gerarModelo(atributos);
+      document.getElementById('output').textContent = modeloGerado;
+
+      // Habilitar o botão de copiar
+      document.getElementById('copyButton').disabled = false;
+    });
+
+    document.getElementById('clearButton').addEventListener('click', () => {
+      limparClickCount++; // Incrementa o contador a cada clique
+      if (limparClickCount === 3) {
+        alert('Calma, Chefão!');
+        limparClickCount = 0; // Reseta o contador após exibir a mensagem
+        return;
+      }
+
+      document.getElementById('inputAttributes').value = '';
+      document.getElementById('output').textContent = 'O modelo gerado aparecerá aqui...';
+
+      // Desabilitar o botão de copiar
+      document.getElementById('copyButton').disabled = true;
+    });
+
+    // Função para copiar o conteúdo gerado
+    document.getElementById('copyButton').addEventListener('click', () => {
+      const output = document.getElementById('output').textContent;
+      if (!output || output === 'O modelo gerado aparecerá aqui...') {
+        alert('Nada para copiar!');
+        return;
+      }
+
+      navigator.clipboard.writeText(output).then(() => {
+        alert('Conteúdo copiado para a área de transferência!');
+      }).catch(err => {
+        alert('Erro ao copiar: ' + err);
+      });
+    });
+  </script>
+</body>
+</html>
