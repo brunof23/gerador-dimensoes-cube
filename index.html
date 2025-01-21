@@ -92,7 +92,9 @@
       vl: 'number',
       qt: 'number',
       in: 'boolean',
-      sg: 'string'
+      sg: 'string',
+      te: 'string',
+      tx: 'number'
     };
 
     // Função para determinar o tipo com base no prefixo
@@ -108,7 +110,7 @@
         return `  ${atributo.trim()}: {\n    sql: \`${atributo.trim()}\`,\n    type: \`${tipo}\`\n  }`;
       });
 
-      return `dimensions: {\n${linhas.join(',\n')}\n}`;
+      return `\n${linhas.join(',\n')}\n`;
     };
 
     let limparClickCount = 0; // Contador de cliques no botão "Limpar"
